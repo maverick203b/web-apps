@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bluey's Maths Adventure! 🐾</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    /* ===== RESET & VARIABLES ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:        #3A9FCC;
+      --blue-light:  #6CC5E8;
+      --blue-dark:   #1B6E99;
+      --blue-bg:     #C6EEFF;
+      --orange:      #F4874B;
+      --orange-dark: #C8652E;
+      --yellow:      #FFD166;
+      --green:       #3DB88B;
+      --green-dark:  #259C72;
+      --red:         #E05C5C;
+      --red-dark:    #B84040;
+      --purple:      #9B72CF;
+      --card:        #FFFFFF;
+      --text:        #2C3E50;
+      --muted:       #7A8EA0;
+      --radius:      20px;
+      --shadow:      0 4px 24px rgba(0,0,0,0.10);
+    }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: linear-gradient(175deg, #87CEEB 0%, #C6EEFF 38%, #FFF5E0 100%);
+      min-height: 100vh;
+      min-height: 100dvh;
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* Cloud shapes */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 0;
+      background:
+        radial-gradient(ellipse 130px 60px at  8% 12%, rgba(255,255,255,.55) 0%, transparent 70%),
+        radial-gradient(ellipse  80px 40px at 12%  8%, rgba(255,255,255,.55) 0%, transparent 70%),
+        radial-gradient(ellipse 110px 55px at 72%  7%, rgba(255,255,255,.45) 0%, transparent 70%),
+        radial-gradient(ellipse  70px 35px at 76%  4%, rgba(255,255,255,.45) 0%, transparent 70%),
+        radial-gradient(ellipse  95px 48px at 42% 22%, rgba(255,255,255,.35) 0%, transparent 70%);
+    }
+
+    .paw {
+      position: fixed; font-size: 2.2rem; opacity: .07;
+      pointer-events: none; z-index: 0; user-select: none;
+    }
+
+    /* ===== SCREENS ===== */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    .container {
+      max-width: 660px;
+      margin: 0 auto;
+      padding: 20px 16px 40px;
+      position: relative; z-index: 1;
+    }
+
+    /* ===== SHARED BUTTONS ===== */
+    button { touch-action: manipulation; font-family: 'Nunito', sans-serif; cursor: pointer; }
+
+    .btn-orange {
+      background: linear-gradient(145deg, var(--orange), var(--orange-dark));
+      color: #fff; border: none; border-radius: 50px;
+      padding: 16px 44px;
+      font-family: 'Fredoka One', cursive; font-size: 1.45rem;
+      box-shadow: 0 5px 0 #A8501E, 0 8px 20px rgba(244,135,75,.38);
+      transition: transform .14s, box-shadow .14s;
+    }
+    .btn-orange:hover  { transform: translateY(-3px); box-shadow: 0 8px 0 #A8501E, 0 12px 24px rgba(244,135,75,.45); }
+    .btn-orange:active { transform: translateY(3px);  box-shadow: 0 2px 0 #A8501E; }
+
+    .btn-outline {
+      background: transparent; color: var(--blue-dark);
+      border: 3px solid var(--blue); border-radius: 50px;
+      padding: 13px 40px;
+      font-family: 'Fredoka One', cursive; font-size: 1.1rem;
+      transition: background .18s;
+    }
+    .btn-outline:hover { background: rgba(58,159,204,.12); }
+
+    /* ===== HOME BUTTON (universal) ===== */
+    .home-btn {
+      background: rgba(255,255,255,.85); border: 2.5px solid var(--blue);
+      border-radius: 50%; width: 40px; height: 40px; flex-shrink: 0;
+      font-size: 1.1rem; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 8px rgba(58,159,204,.25);
+      transition: transform .18s, background .18s, box-shadow .18s;
+    }
+    .home-btn:hover {
+      background: var(--blue); transform: scale(1.12);
+      box-shadow: 0 4px 14px rgba(58,159,204,.45);
+    }
+
+    /* ===== HOME SCREEN ===== */
+    #home-screen .container { text-align: center; padding-top: 28px; }
+
+    .hero-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(2.1rem, 8vw, 3.4rem);
+      color: var(--blue-dark);
+      text-shadow: 3px 3px 0 rgba(255,255,255,.5), -1px -1px 0 rgba(0,0,0,.08);
+      line-height: 1.1; margin-bottom: 8px;
+    }
+    .hero-title .accent { color: var(--orange); }
+
+    .hero-sub {
+      font-size: 1.1rem; font-weight: 700;
+      color: var(--blue-dark); opacity: .85; margin-bottom: 24px;
+    }
+
+    .chars { display: flex; justify-content: center; gap: 18px; margin-bottom: 28px; }
+    .char  { font-size: 3.8rem; display: inline-block; animation: bounceChar 2s ease-in-out infinite; }
+    .char:nth-child(2) { animation-delay: .35s; }
+    .char:nth-child(3) { animation-delay: .7s; }
+
+    @keyframes bounceChar {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-13px); }
+    }
+
+    .grade-card {
+      background: var(--card); border-radius: var(--radius);
+      padding: 24px 20px; box-shadow: var(--shadow); margin-bottom: 22px;
+    }
+    .grade-card-label {
+      font-family: 'Fredoka One', cursive; font-size: 1.25rem;
+      color: var(--blue-dark); margin-bottom: 14px;
+    }
+
+    .grade-grid {
+      display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 440px) { .grade-grid { grid-template-columns: repeat(4, 1fr); } }
+
+    .grade-btn {
+      background: var(--blue-bg); border: 3px solid transparent;
+      border-radius: 14px; padding: 10px 4px;
+      font-family: 'Fredoka One', cursive; color: var(--blue-dark);
+      display: flex; flex-direction: column; align-items: center; gap: 1px;
+      transition: transform .18s, background .18s, border-color .18s, box-shadow .18s;
+    }
+    .grade-btn .gn { font-size: 1.25rem; }
+    .grade-btn .gs { font-size: 0.65rem; opacity: .8; }
+    .grade-btn:hover {
+      background: var(--blue-light); color: #fff;
+      transform: translateY(-2px); box-shadow: 0 4px 14px rgba(58,159,204,.3);
+    }
+    .grade-btn.sel {
+      background: var(--blue); border-color: var(--blue-dark); color: #fff;
+      transform: translateY(-3px); box-shadow: 0 6px 18px rgba(58,159,204,.42);
+    }
+
+    .grade-desc {
+      background: linear-gradient(135deg, var(--yellow), #FFE596);
+      border-radius: 14px; padding: 13px 16px;
+      font-size: .95rem; font-weight: 700; color: var(--text);
+      min-height: 52px; display: flex; align-items: center; justify-content: center;
+      text-align: center;
+    }
+
+    /* ===== QUIZ SCREEN ===== */
+    #quiz-screen .container { padding-top: 18px; }
+
+    .quiz-header {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--card); border-radius: 50px;
+      padding: 9px 14px; box-shadow: var(--shadow); margin-bottom: 14px;
+    }
+    .score-pill {
+      display: flex; align-items: center; gap: 6px; flex: 1;
+      font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--blue-dark);
+    }
+    .score-badge {
+      background: var(--yellow); border-radius: 20px;
+      padding: 3px 12px; font-size: .95rem; color: var(--text);
+      font-family: 'Fredoka One', cursive;
+      display: inline-block;
+      transition: transform .18s;
+    }
+    .score-badge.pump { animation: scorePump .45s cubic-bezier(.36,.07,.19,.97); }
+    .prog-label { font-family: 'Fredoka One', cursive; font-size: .95rem; color: var(--muted); white-space: nowrap; }
+    .grade-tag {
+      background: var(--blue); color: #fff; border-radius: 50px;
+      padding: 4px 13px; font-family: 'Fredoka One', cursive; font-size: .85rem;
+      white-space: nowrap;
+    }
+
+    .progress-track {
+      background: rgba(255,255,255,.6); border-radius: 50px;
+      height: 9px; overflow: hidden; margin-bottom: 16px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--blue), var(--blue-light));
+      border-radius: 50px; transition: width .5s ease;
+    }
+
+    .q-card {
+      background: var(--card); border-radius: var(--radius);
+      padding: 28px 22px; box-shadow: var(--shadow);
+      text-align: center; margin-bottom: 16px;
+      transition: box-shadow .3s;
+    }
+    .q-card.glow-correct {
+      box-shadow: 0 0 0 4px rgba(61,184,139,.35), var(--shadow);
+    }
+    .q-eyebrow {
+      font-size: .8rem; font-weight: 800; color: var(--blue);
+      text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 10px;
+    }
+    .q-text {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(1.35rem, 5vw, 1.95rem); line-height: 1.5; color: var(--text);
+    }
+
+    /* ===== OPTIONS ===== */
+    .opts-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 11px; margin-bottom: 16px;
+    }
+    .opt-btn {
+      background: var(--card); border: 3px solid #D8E8F0;
+      border-radius: 16px; padding: 15px 10px;
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(1rem, 3.8vw, 1.25rem); color: var(--text);
+      box-shadow: 0 3px 0 #C8D8E0;
+      transition: transform .18s, border-color .18s, background .18s, box-shadow .18s;
+      position: relative; overflow: hidden;
+    }
+    .opt-btn:hover:not(:disabled) {
+      background: var(--blue-bg); border-color: var(--blue);
+      transform: translateY(-2px); box-shadow: 0 5px 0 #A8C8D8;
+    }
+    .opt-btn:disabled { cursor: default; }
+
+    .opt-btn.correct {
+      background: linear-gradient(145deg, #3DB88B, #28A07A);
+      border-color: #229068; color: #fff;
+      box-shadow: 0 3px 0 #1A7055;
+    }
+    /* Rainbow shimmer on correct answer */
+    .opt-btn.correct-celebrate {
+      background: linear-gradient(135deg, #FF6B9D, #FFD166, #06D6A0, #4DA8DA, #C77DFF, #FF6B9D);
+      background-size: 400% 400%;
+      border-color: #229068; color: #fff;
+      box-shadow: 0 3px 0 #1A7055;
+      animation: rainbowShimmer 1.5s ease infinite;
+    }
+    .opt-btn.wrong {
+      background: linear-gradient(145deg, var(--red), var(--red-dark));
+      border-color: #9C3030; color: #fff;
+      box-shadow: 0 3px 0 #882828;
+    }
+
+    /* ===== FEEDBACK ===== */
+    .feedback {
+      background: var(--card); border-radius: var(--radius);
+      padding: 18px 20px; box-shadow: var(--shadow);
+      text-align: center; min-height: 80px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 5px; transition: background .3s, box-shadow .3s;
+    }
+    .feedback.ok {
+      background: linear-gradient(135deg, #D5F5E8, #A8DFBF);
+      box-shadow: 0 0 0 3px rgba(61,184,139,.3), var(--shadow);
+    }
+    .feedback.oops { background: linear-gradient(135deg, #FADADD, #F5A8A8); }
+    .feedback-icon { font-size: 2rem; }
+    .feedback-msg  { font-size: .98rem; font-weight: 800; color: var(--text); line-height: 1.45; }
+    .feedback-idle { font-size: .98rem; font-weight: 700; color: var(--muted); }
+
+    .next-btn {
+      display: none; margin-top: 10px;
+      background: linear-gradient(145deg, var(--blue), var(--blue-dark));
+      color: #fff; border: none; border-radius: 50px;
+      padding: 11px 32px; font-family: 'Fredoka One', cursive;
+      font-size: 1.05rem; box-shadow: 0 4px 0 #155C80;
+      transition: transform .14s, box-shadow .14s;
+    }
+    .next-btn.show { display: inline-block; }
+    .next-btn:hover  { transform: translateY(-2px); box-shadow: 0 6px 0 #155C80; }
+    .next-btn:active { transform: translateY(2px);  box-shadow: 0 2px 0 #155C80; }
+
+    /* ===== RESULTS SCREEN ===== */
+    #results-screen .container { text-align: center; padding-top: 18px; }
+
+    .results-top-bar {
+      display: flex; align-items: center; justify-content: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .results-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(1.9rem, 7vw, 2.9rem); color: var(--blue-dark);
+      text-shadow: 2px 2px 0 rgba(255,255,255,.5); margin-bottom: 22px;
+    }
+
+    .results-card {
+      background: var(--card); border-radius: var(--radius);
+      padding: 28px 24px; box-shadow: var(--shadow); margin-bottom: 20px;
+    }
+
+    .score-circle {
+      width: 140px; height: 140px; border-radius: 50%;
+      margin: 0 auto 18px;
+      background: linear-gradient(145deg, var(--blue), var(--blue-dark));
+      box-shadow: 0 6px 22px rgba(58,159,204,.4);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .sc-big  { font-family: 'Fredoka One', cursive; font-size: 2.8rem; color: #fff; line-height: 1; }
+    .sc-of   { font-size: .9rem; color: rgba(255,255,255,.78); font-weight: 700; }
+
+    .stars-row  { font-size: 2.4rem; letter-spacing: 4px; margin-bottom: 14px; }
+    .results-msg { font-size: 1.08rem; font-weight: 800; color: var(--text); line-height: 1.5; margin-bottom: 10px; }
+    .results-pct { font-family: 'Fredoka One', cursive; font-size: .98rem; color: var(--muted); }
+
+    .results-actions { display: flex; flex-direction: column; gap: 12px; }
+
+    /* ===== ANIMATIONS ===== */
+
+    /* Score badge pump */
+    @keyframes scorePump {
+      0%   { transform: scale(1); }
+      30%  { transform: scale(1.55); }
+      60%  { transform: scale(.9); }
+      100% { transform: scale(1); }
+    }
+
+    /* Rainbow shimmer for correct-celebrate button */
+    @keyframes rainbowShimmer {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Shake for wrong */
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20% { transform: translateX(-8px); }
+      40% { transform: translateX(8px); }
+      60% { transform: translateX(-5px); }
+      80% { transform: translateX(5px); }
+    }
+
+    /* Pop for feedback area */
+    @keyframes feedbackPop {
+      0%   { transform: scale(.92); }
+      55%  { transform: scale(1.04); }
+      100% { transform: scale(1); }
+    }
+
+    /* Confetti fall */
+    @keyframes confettiFall {
+      0%   { transform: translateY(-30px) rotate(0deg);   opacity: 1; }
+      100% { transform: translateY(105vh) rotate(720deg); opacity: 0; }
+    }
+
+    /* Emoji burst particles */
+    @keyframes burstOut {
+      0%   { transform: translate(0,0) scale(1.2); opacity: 1; }
+      100% { transform: translate(var(--bx), var(--by)) scale(0); opacity: 0; }
+    }
+
+    /* Floating big emoji from button */
+    @keyframes floatUp {
+      0%   { transform: translateY(0)    scale(.5); opacity: 1; }
+      60%  { transform: translateY(-90px) scale(1.3); opacity: 1; }
+      100% { transform: translateY(-140px) scale(1); opacity: 0; }
+    }
+
+    /* Screen flash overlay */
+    @keyframes flashCorrect {
+      0%   { opacity: .38; }
+      100% { opacity: 0; }
+    }
+
+    .anim-shake    { animation: shake .5s ease; }
+    .anim-pop      { animation: feedbackPop .35s ease; }
+
+    /* Effect layers */
+    .confetti-wrap {
+      position: fixed; inset: 0; pointer-events: none; z-index: 200;
+    }
+    .cp {
+      position: absolute; border-radius: 3px;
+      animation: confettiFall linear forwards;
+    }
+
+    .burst-particle {
+      position: fixed; pointer-events: none; z-index: 201;
+      font-size: 1.6rem;
+      animation: burstOut .75s cubic-bezier(.2,.8,.6,1) forwards;
+    }
+
+    .float-emoji {
+      position: fixed; pointer-events: none; z-index: 202;
+      font-size: 3.2rem; line-height: 1;
+      animation: floatUp 1.1s cubic-bezier(.2,.8,.4,1) forwards;
+    }
+
+    .flash-overlay {
+      position: fixed; inset: 0; pointer-events: none; z-index: 199;
+      background: radial-gradient(circle at center, #FFD166, #3DB88B);
+      animation: flashCorrect .55s ease forwards;
+    }
+
+    /* Mobile */
+    @media (max-width: 380px) {
+      .opts-grid { gap: 8px; }
+      .opt-btn { padding: 13px 8px; font-size: .95rem; }
+      .q-text  { font-size: 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Paw decorations -->
+<div class="paw" style="top:4%;left:2%;transform:rotate(-18deg)">🐾</div>
+<div class="paw" style="top:14%;right:3%;transform:rotate(14deg)">🐾</div>
+<div class="paw" style="top:48%;left:1.5%;transform:rotate(30deg)">🐾</div>
+<div class="paw" style="top:68%;right:2%;transform:rotate(-10deg)">🐾</div>
+<div class="paw" style="bottom:8%;left:4%;transform:rotate(22deg)">🐾</div>
+<div class="paw" style="bottom:18%;right:4%;transform:rotate(-30deg)">🐾</div>
+
+<!-- ========================================================
+     HOME SCREEN
+======================================================== -->
+<div id="home-screen" class="screen active">
+  <div class="container">
+    <div class="hero-title">Bluey's <span class="accent">Maths</span> Adventure! 🐾</div>
+    <div class="hero-sub">Let's play, mate! Pick your grade below.</div>
+
+    <div class="chars">
+      <span class="char">🐕</span>
+      <span class="char">📐</span>
+      <span class="char">🐶</span>
+    </div>
+
+    <div class="grade-card">
+      <div class="grade-card-label">🎓 Choose Your Grade</div>
+      <div class="grade-grid" id="grade-grid"></div>
+      <div class="grade-desc" id="grade-desc">🐾 Pick a grade to see what maths you'll be doing!</div>
+    </div>
+
+    <button class="btn-orange" onclick="startGame()">🎮 Let's Play!</button>
+  </div>
+</div>
+
+<!-- ========================================================
+     QUIZ SCREEN
+======================================================== -->
+<div id="quiz-screen" class="screen">
+  <div class="container">
+    <div class="quiz-header">
+      <button class="home-btn" onclick="goHome()" title="Back to Home">🏠</button>
+      <div class="score-pill">⭐ <span class="score-badge" id="score-badge">0</span></div>
+      <div class="prog-label" id="prog-label">1 / 10</div>
+      <div class="grade-tag" id="grade-tag">Grade 1</div>
+    </div>
+
+    <div class="progress-track">
+      <div class="progress-fill" id="prog-fill" style="width:0%"></div>
+    </div>
+
+    <div class="q-card" id="q-card">
+      <div class="q-eyebrow">🐾 Question</div>
+      <div class="q-text" id="q-text">Loading…</div>
+    </div>
+
+    <div class="opts-grid" id="opts-grid"></div>
+
+    <div class="feedback" id="feedback">
+      <div class="feedback-idle">Choose your answer above! 🐕</div>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================
+     RESULTS SCREEN
+======================================================== -->
+<div id="results-screen" class="screen">
+  <div class="container">
+    <div class="results-top-bar">
+      <button class="home-btn" onclick="goHome()" title="Back to Home">🏠</button>
+    </div>
+    <div class="results-title" id="results-title">Round Complete! 🎉</div>
+
+    <div class="results-card">
+      <div class="score-circle">
+        <div class="sc-big" id="r-score">0</div>
+        <div class="sc-of">out of 10</div>
+      </div>
+      <div class="stars-row" id="r-stars">⭐⭐⭐</div>
+      <div class="results-msg" id="r-msg">Great job!</div>
+      <div class="results-pct" id="r-pct">You got 70% correct!</div>
+    </div>
+
+    <div class="results-actions">
+      <button class="btn-orange" onclick="playAgain()">🔄 Play Again!</button>
+      <button class="btn-outline" onclick="goHome()">🏠 Choose Grade</button>
+    </div>
+  </div>
+</div>
+
+<!-- Effect layers -->
+<div class="confetti-wrap" id="confetti-wrap"></div>
+
+<!-- ========================================================
+     JAVASCRIPT
+======================================================== -->
+<script>
+"use strict";
+
+// ─── State ────────────────────────────────────────────────
+const S = { grade: 1, qi: 0, score: 0, qs: [], total: 10, locked: false };
+
+// ─── Grade metadata ───────────────────────────────────────
+const GRADE_INFO = {
+   1: { sfx:'st',  desc:'🐾 Adding and subtracting numbers up to 20!' },
+   2: { sfx:'nd',  desc:'🐾 Bigger additions & subtractions, plus skip counting!' },
+   3: { sfx:'rd',  desc:'🐾 Times tables and division — you got this!' },
+   4: { sfx:'th',  desc:'🐾 Multi-digit multiplication, division & basic fractions!' },
+   5: { sfx:'th',  desc:'🐾 Fractions, decimals, and order of operations!' },
+   6: { sfx:'th',  desc:'🐾 Ratios, percentages, and negative numbers!' },
+   7: { sfx:'th',  desc:'🐾 Proportions, percent change, and solving equations!' },
+   8: { sfx:'th',  desc:'🐾 Linear equations, slope, and exponent rules!' },
+   9: { sfx:'th',  desc:'🐾 Quadratics, factoring, and systems of equations!' },
+  10: { sfx:'th',  desc:'🐾 Geometry, Pythagorean theorem, and trig ratios!' },
+  11: { sfx:'th',  desc:'🐾 Trigonometry, logarithms, and advanced algebra!' },
+  12: { sfx:'th',  desc:'🐾 Statistics, probability, and limits!' },
+};
+
+// ─── Celebrate emojis (burst + float) ────────────────────
+const BURST_EMOJIS = ['⭐','✨','🌟','💫','🎊','🎉','🐾','💥','🌈'];
+const FLOAT_EMOJIS = ['🌟','🎉','⭐','✨','🏆','💫','🐾','🎊'];
+
+// ─── Feedback messages ────────────────────────────────────
+const CORRECT_MSGS = [
+  { i:'🎉', t:'Woohoo! Bluey would do a happy dance for that!' },
+  { i:'⭐', t:'Bingo! That\'s spot on, mate!' },
+  { i:'🐾', t:'Crikey! You\'re a maths genius!' },
+  { i:'✨', t:'Chilli is SO proud of you right now!' },
+  { i:'🏆', t:'That\'s it! You\'re playing the game!' },
+  { i:'🎊', t:'Bandit says that\'s the best answer he\'s EVER seen!' },
+  { i:'🌟', t:'Absolute legend — nailed it!' },
+  { i:'🐕', t:'Top marks from the Heeler family!' },
+  { i:'🌈', t:'Boom! You\'re as smart as Mackenzie!' },
+  { i:'💫', t:'Jack wishes he was that clever!' },
+  { i:'🦊', t:'Chloe is taking notes — you\'re on fire!' },
+  { i:'🎯', t:'Bullseye! Dead-set brilliant!' },
+];
+
+const WRONG_MSGS = [
+  { i:'😅', t:'Oops! Even Bandit gets mixed up sometimes!' },
+  { i:'🐾', t:'Not quite! But Bluey never gives up — and neither do you!' },
+  { i:'💪', t:'Tricky one! The answer was' },
+  { i:'🌟', t:'Don\'t worry, Bingo believes in you! The answer was' },
+  { i:'💡', t:'Every mistake makes you smarter! The answer was' },
+  { i:'🦊', t:'That sneaky problem got you! The answer was' },
+];
+
+const RESULTS = [
+  { title:'🏆 Perfect Score! 🏆', stars:'⭐⭐⭐⭐⭐', msg:'🏆 PERFECT! You\'re an absolute legend, mate!' },
+  { title:'🌟 Amazing Work! 🌟',  stars:'⭐⭐⭐⭐',   msg:'🌟 Amazing! Bluey would LOVE to have you on her team!' },
+  { title:'💪 Great Effort! 💪',  stars:'⭐⭐⭐',     msg:'💪 Great effort! You\'re levelling up like a true Heeler!' },
+  { title:'🐾 Good Try! 🐾',      stars:'⭐⭐',       msg:'🐾 Good try! Keep practising and you\'ll smash it next time!' },
+  { title:'💙 Keep Going! 💙',    stars:'⭐',         msg:'💙 Never give up! Even Bingo struggled with Keepy Uppy at first — you\'ve got this!' },
+];
+
+// ─── Utilities ────────────────────────────────────────────
+const ri  = (lo, hi) => Math.floor(Math.random() * (hi - lo + 1)) + lo;
+const rc  = arr => arr[Math.floor(Math.random() * arr.length)];
+const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function numOpts(correct, lo, hi, count = 4) {
+  const cs = String(correct);
+  const set = new Set([cs]);
+  const diffs = shuffle([-1, 1, -2, 2, -3, 3, -4, 4, 5, -5, 6, -6]);
+  for (const d of diffs) {
+    if (set.size >= count) break;
+    const v = +correct + d;
+    const vs = String(Number.isInteger(v) ? v : Math.round(v * 100) / 100);
+    if (v >= lo && v <= hi && !set.has(vs)) set.add(vs);
+  }
+  let tries = 0;
+  while (set.size < count && tries++ < 80) {
+    const v = ri(Math.max(lo, +correct - 8), Math.min(hi, +correct + 8));
+    const vs = String(v);
+    if (!set.has(vs)) set.add(vs);
+  }
+  return shuffle([...set]);
+}
+
+const SUPS = {'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+const SUBS = {'0':'₀','1':'₁','2':'₂','3':'₃','4':'₄','5':'₅','6':'₆','7':'₇','8':'₈','9':'₉'};
+const sup = n => String(n).split('').map(c => SUPS[c] || c).join('');
+const sub = n => String(n).split('').map(c => SUBS[c] || c).join('');
+
+// ─── Problem generators ───────────────────────────────────
+
+function g1() {
+  if (Math.random() < .55) {
+    const a = ri(1,12), b = ri(1, 20-a);
+    return { q:`${a} + ${b} = ?`, a:a+b, o:numOpts(a+b,0,25) };
+  } else {
+    const ans = ri(0,10), b = ri(1,10);
+    return { q:`${ans+b} − ${b} = ?`, a:ans, o:numOpts(ans,0,20) };
+  }
+}
+
+function g2() {
+  const type = rc(['add','sub','skip']);
+  if (type === 'add') {
+    const a = ri(12,70), b = ri(5, 100-a);
+    return { q:`${a} + ${b} = ?`, a:a+b, o:numOpts(a+b,0,130) };
+  } else if (type === 'sub') {
+    const ans = ri(10,60), b = ri(5,40);
+    return { q:`${ans+b} − ${b} = ?`, a:ans, o:numOpts(ans,0,100) };
+  } else {
+    const skip = rc([2,5,10]);
+    const start = ri(0,4)*skip;
+    const s0=start, s1=s0+skip, s2=s1+skip;
+    return { q:`Skip count by ${skip}:  ${s0},  ${s1},  ${s2},  ?`, a:s2+skip, o:numOpts(s2+skip,0,120) };
+  }
+}
+
+function g3() {
+  if (Math.random() < .55) {
+    const a = ri(2,10), b = ri(2,10);
+    return { q:`${a} × ${b} = ?`, a:a*b, o:numOpts(a*b,0,110) };
+  } else {
+    const ans = ri(2,10), b = ri(2,10);
+    return { q:`${ans*b} ÷ ${b} = ?`, a:ans, o:numOpts(ans,0,15) };
+  }
+}
+
+function g4() {
+  const type = rc(['big_mult','div','half']);
+  if (type === 'big_mult') {
+    const a = ri(12,50), b = ri(2,9);
+    return { q:`${a} × ${b} = ?`, a:a*b, o:numOpts(a*b,0,500) };
+  } else if (type === 'div') {
+    const ans = ri(3,12), b = ri(2,9);
+    return { q:`${ans*b} ÷ ${b} = ?`, a:ans, o:numOpts(ans,0,20) };
+  } else {
+    const whole = ri(2,20)*2;
+    return { q:`What is ½ of ${whole}?`, a:whole/2, o:numOpts(whole/2,0,25) };
+  }
+}
+
+function g5() {
+  const type = rc(['frac_add','decimal','order_ops']);
+  if (type === 'frac_add') {
+    const denom = rc([4,5,6,8,10]);
+    const max2 = Math.floor(denom * 0.45);
+    const a = ri(1, max2), b = ri(1, max2);
+    const num = a + b;
+    const g = gcd(num, denom);
+    const rn = num/g, rd = denom/g;
+    const ans = rd === 1 ? String(rn) : `${rn}/${rd}`;
+    const wrongs = shuffle([
+      `${a}/${denom}`, `${b}/${denom}`,
+      `${num+1}/${denom}`, `${num}/${denom+1}`,
+    ].filter(s => s !== ans)).slice(0, 3);
+    return { q:`${a}/${denom} + ${b}/${denom} = ?`, a:ans, o:shuffle([ans,...wrongs]) };
+  } else if (type === 'decimal') {
+    const pairs = [[0.5,4],[1.5,2],[2.5,4],[0.25,8],[1.5,6],[3.5,2],[0.5,10],[2.5,2]];
+    const [x,y] = rc(pairs);
+    const ans = Math.round(x*y*100)/100;
+    return { q:`${x} × ${y} = ?`, a:ans, o:numOpts(ans,0,30) };
+  } else {
+    const a = ri(1,8), b = ri(2,8), c = ri(1,8);
+    const ans = a + b*c;
+    return { q:`${a} + ${b} × ${c} = ?`, a:ans, o:numOpts(ans,0,80) };
+  }
+}
+
+function g6() {
+  const type = rc(['pct','neg','ratio']);
+  if (type === 'pct') {
+    const pct = rc([10,20,25,50,75]);
+    const num = rc([20,40,60,80,100,120,200]);
+    const ans = pct/100*num;
+    return { q:`What is ${pct}% of ${num}?`, a:ans, o:numOpts(ans,0,200) };
+  } else if (type === 'neg') {
+    if (Math.random()<.5) {
+      const a = ri(-10,-1), b = ri(1,15);
+      return { q:`${a} + ${b} = ?`, a:a+b, o:numOpts(a+b,-15,15) };
+    } else {
+      const a = ri(-5,8), b = ri(1,10);
+      return { q:`${a} − ${b} = ?`, a:a-b, o:numOpts(a-b,-15,10) };
+    }
+  } else {
+    const a = ri(1,5), b = ri(1,5), mult = ri(2,6);
+    const total = (a+b)*mult, ans = a*mult;
+    return { q:`Ratio of blue to red is ${a}:${b}. Total = ${total}. How many blue?`, a:ans, o:numOpts(ans,0,40) };
+  }
+}
+
+function g7() {
+  const type = rc(['eq','prop','pct_change']);
+  if (type === 'eq') {
+    const a = ri(2,5), x = ri(1,8), b = ri(1,10);
+    const c = a*x + b;
+    return { q:`Solve: ${a}x + ${b} = ${c}`, a:x, o:numOpts(x,-5,20) };
+  } else if (type === 'prop') {
+    let a,b,c,x;
+    do { a=ri(2,6); b=ri(2,8); x=ri(2,10); c=a*x/b; } while (!Number.isInteger(c));
+    return { q:`Solve the proportion: ${a}/${b} = ${c}/x`, a:x, o:numOpts(x,0,30) };
+  } else {
+    const orig = rc([20,40,50,80,100,120,200]);
+    const pct  = rc([10,20,25,50]);
+    const inc  = Math.random()<.5;
+    const ans  = inc ? orig + pct*orig/100 : orig - pct*orig/100;
+    const word = inc ? 'increased by' : 'decreased by';
+    return { q:`${orig} ${word} ${pct}% = ?`, a:ans, o:numOpts(ans,0,300) };
+  }
+}
+
+function g8() {
+  const type = rc(['lin_eq','slope','exp_rule']);
+  if (type === 'lin_eq') {
+    const a = ri(2,6), x = ri(-4,8), b = ri(-8,8);
+    const c = a*x + b;
+    const bStr = b >= 0 ? `+ ${b}` : `− ${Math.abs(b)}`;
+    return { q:`Solve: ${a}x ${bStr} = ${c}`, a:x, o:numOpts(x,-10,15) };
+  } else if (type === 'slope') {
+    const x1=ri(-3,3), m=ri(-4,4), y1=ri(-5,5);
+    const dx=ri(1,4), x2=x1+dx, y2=y1+m*dx;
+    return { q:`Slope between (${x1}, ${y1}) and (${x2}, ${y2})?`, a:m, o:numOpts(m,-8,8) };
+  } else {
+    const a=ri(1,5), b=ri(1,5);
+    return { q:`Simplify: 2${sup(a)} × 2${sup(b)} = 2ˣ  — find x`, a:a+b, o:numOpts(a+b,1,12) };
+  }
+}
+
+function g9() {
+  const type = rc(['quad','factor','system']);
+  if (type === 'quad') {
+    const r1=ri(1,8), r2=ri(1,8);
+    const bC=-(r1+r2), cC=r1*r2;
+    const bStr = bC<0 ? `− ${Math.abs(bC)}x` : `+ ${bC}x`;
+    const cStr = cC<0 ? `− ${Math.abs(cC)}`   : `+ ${cC}`;
+    const ans  = `${Math.min(r1,r2)} and ${Math.max(r1,r2)}`;
+    const wrongs = shuffle([
+      `${r1+1} and ${r2}`, `${r1} and ${r2+1}`, `${r1+r2} and ${r1*r2}`,
+    ].filter(s=>s!==ans)).slice(0,3);
+    return { q:`Solve: x² ${bStr} ${cStr} = 0`, a:ans, o:shuffle([ans,...wrongs]) };
+  } else if (type === 'factor') {
+    const r1=ri(1,6), r2=ri(1,6);
+    const ans = `(x + ${r1})(x + ${r2})`;
+    const wrongs = [`(x + ${r1+1})(x + ${r2})`, `(x + ${r1})(x − ${r2})`, `(x − ${r1})(x − ${r2})`];
+    return { q:`Factor: x² + ${r1+r2}x + ${r1*r2}`, a:ans, o:shuffle([ans,...wrongs]) };
+  } else {
+    const x=ri(1,8), y=ri(1,8);
+    const ans = `x = ${x}, y = ${y}`;
+    const wrongs = [`x = ${x+1}, y = ${y-1}`, `x = ${y}, y = ${x}`, `x = ${x-1}, y = ${y+1}`];
+    return { q:`Solve:  x + y = ${x+y}  and  x − y = ${x-y}`, a:ans, o:shuffle([ans,...wrongs]) };
+  }
+}
+
+function g10() {
+  const type = rc(['pyth','trig','area']);
+  if (type === 'pyth') {
+    const triples = [[3,4,5],[5,12,13],[8,15,17],[6,8,10],[9,12,15],[7,24,25]];
+    const [a,b,c] = rc(triples);
+    if (Math.random()<.5) {
+      return { q:`Right triangle: legs ${a} and ${b}. Hypotenuse = ?`, a:c, o:numOpts(c,1,30) };
+    } else {
+      return { q:`Right triangle: hypotenuse ${c}, one leg ${a}. Other leg = ?`, a:b, o:numOpts(b,1,30) };
+    }
+  } else if (type === 'trig') {
+    const data = [
+      {ang:0,  sin:'0',    cos:'1',    tan:'0'},
+      {ang:30, sin:'1/2',  cos:'√3/2', tan:'√3/3'},
+      {ang:45, sin:'√2/2', cos:'√2/2', tan:'1'},
+      {ang:60, sin:'√3/2', cos:'1/2',  tan:'√3'},
+    ];
+    const row = rc(data), fn = rc(['sin','cos','tan']);
+    const ans = row[fn];
+    const pool = ['0','1','1/2','√2/2','√3/2','√3','√3/3','2','−1','undefined'];
+    const wrongs = shuffle(pool.filter(v=>v!==ans)).slice(0,3);
+    return { q:`What is ${fn}(${row.ang}°)?`, a:ans, o:shuffle([ans,...wrongs]) };
+  } else {
+    const shape = rc(['triangle','rectangle','circle']);
+    if (shape === 'triangle') {
+      const base=ri(4,12), h=ri(3,10), ans=0.5*base*h;
+      return { q:`Area of triangle: base ${base}, height ${h}?`, a:ans, o:numOpts(ans,0,80) };
+    } else if (shape === 'rectangle') {
+      const w=ri(3,12), h=ri(3,12), ans=w*h;
+      return { q:`Area of rectangle: width ${w}, height ${h}?`, a:ans, o:numOpts(ans,0,150) };
+    } else {
+      const r=ri(1,7), area=r*r;
+      const ans=`${area}π`;
+      const wrongs=[`${area+1}π`,`${area-1}π`,`${2*r}π`].filter(s=>s!==ans);
+      return { q:`Area of circle with radius ${r}? (in terms of π)`, a:ans, o:shuffle([ans,...wrongs.slice(0,3)]) };
+    }
+  }
+}
+
+function g11() {
+  const type = rc(['log','identity','solve_trig']);
+  if (type === 'log') {
+    const base = rc([2,3,5,10]), exp = ri(1,4);
+    return { q:`log${sub(base)}(${Math.pow(base,exp)}) = ?`, a:exp, o:numOpts(exp,-1,8) };
+  } else if (type === 'identity') {
+    return rc([
+      { q:'sin²(x) + cos²(x) = ?',        a:'1',                   o:['1','0','sin(2x)','2'] },
+      { q:'tan(x) = ?',                    a:'sin(x)/cos(x)',       o:['sin(x)/cos(x)','cos(x)/sin(x)','1/sin(x)','1/cos(x)'] },
+      { q:'1 + tan²(x) = ?',               a:'sec²(x)',             o:['sec²(x)','csc²(x)','1','cos²(x)'] },
+      { q:'cos(2x) = ?',                   a:'cos²(x) − sin²(x)',  o:['cos²(x) − sin²(x)','sin²(x) − cos²(x)','2sin(x)cos(x)','1 − cos²(x)'] },
+    ]);
+  } else {
+    return rc([
+      { q:'sin(x) = 1/2  →  x = ?',                           a:'30°', o:['30°','45°','60°','90°'] },
+      { q:'cos(x) = 0  →  one value of x?',                   a:'90°', o:['90°','0°','45°','180°'] },
+      { q:'tan(x) = 1  →  x = ?',                             a:'45°', o:['45°','30°','60°','90°'] },
+      { q:'2sin(x) = √2, solve for x (0° ≤ x ≤ 90°)',         a:'45°', o:['45°','30°','60°','90°'] },
+    ]);
+  }
+}
+
+function g12() {
+  const type = rc(['stats','prob','limit']);
+  if (type === 'stats') {
+    const stat = rc(['mean','median','mode']);
+    if (stat === 'mean') {
+      const n = ri(4,6);
+      const nums = Array.from({length:n}, ()=>ri(2,20));
+      const ans = Math.round(nums.reduce((a,b)=>a+b,0)/n*10)/10;
+      return { q:`Mean of: ${nums.join(', ')}`, a:ans, o:numOpts(ans,1,25) };
+    } else if (stat === 'median') {
+      const n = rc([5,7]);
+      const nums = Array.from({length:n},()=>ri(2,20)).sort((a,b)=>a-b);
+      return { q:`Median of: ${nums.join(', ')}`, a:nums[Math.floor(n/2)], o:numOpts(nums[Math.floor(n/2)],1,25) };
+    } else {
+      const base = Array.from({length:5},()=>ri(1,10));
+      const mode = rc(base);
+      const nums = shuffle([...base, mode]);
+      return { q:`Mode of: ${nums.join(', ')}`, a:mode, o:numOpts(mode,1,15) };
+    }
+  } else if (type === 'prob') {
+    if (Math.random()<.5) {
+      const total=ri(5,10), fav=ri(1,total-1);
+      const ans=`${fav}/${total}`;
+      const wrongs=[`${fav+1}/${total}`,`${total-fav}/${total}`,`${fav}/${total+1}`].filter(s=>s!==ans);
+      return { q:`A bag has ${fav} red and ${total-fav} blue marbles. P(red) = ?`, a:ans, o:shuffle([ans,...wrongs.slice(0,3)]) };
+    } else {
+      return rc([
+        { q:'P(heads) on a fair coin flip = ?',            a:'1/2', o:['1/2','1/4','1/3','2/3'] },
+        { q:'P(rolling a 6 on a fair die) = ?',            a:'1/6', o:['1/6','1/3','1/4','1/2'] },
+        { q:'P(rolling an even number on a fair die) = ?', a:'1/2', o:['1/2','1/3','2/3','1/6'] },
+        { q:'Two fair coins are flipped. P(both heads) = ?',a:'1/4',o:['1/4','1/2','1/3','3/4'] },
+      ]);
+    }
+  } else {
+    return rc([
+      { q:'lim(x→2) of (x² − 4)/(x − 2) = ?', a:'4', o:['4','0','2','undefined'] },
+      { q:'lim(x→∞) of 1/x = ?',               a:'0', o:['0','1','∞','−1'] },
+      { q:'lim(x→0) of sin(x)/x = ?',           a:'1', o:['1','0','∞','undefined'] },
+      { q:'lim(x→3) of (2x + 1) = ?',           a:'7', o:['7','6','8','5'] },
+      { q:'lim(x→∞) of (x + 1)/x = ?',          a:'1', o:['1','0','∞','2'] },
+    ]);
+  }
+}
+
+const GEN = {1:g1,2:g2,3:g3,4:g4,5:g5,6:g6,7:g7,8:g8,9:g9,10:g10,11:g11,12:g12};
+function makeQ(grade) { const r = GEN[grade](); return { q:r.q, a:r.a, o:r.o }; }
+
+// ─── Screen routing ───────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function goHome() { showScreen('home-screen'); }
+
+// ─── Home screen ──────────────────────────────────────────
+function buildGradeGrid() {
+  const grid = document.getElementById('grade-grid');
+  grid.innerHTML = '';
+  for (let g = 1; g <= 12; g++) {
+    const info = GRADE_INFO[g];
+    const btn = document.createElement('button');
+    btn.className = 'grade-btn' + (g === S.grade ? ' sel' : '');
+    btn.innerHTML = `<span class="gn">${g}</span><span class="gs">${info.sfx}</span>`;
+    btn.onclick = () => pickGrade(g);
+    grid.appendChild(btn);
+  }
+  setGradeDesc();
+}
+
+function pickGrade(g) {
+  S.grade = g;
+  document.querySelectorAll('.grade-btn').forEach((b, i) => b.classList.toggle('sel', i+1 === g));
+  setGradeDesc();
+}
+
+function setGradeDesc() {
+  document.getElementById('grade-desc').textContent = GRADE_INFO[S.grade].desc;
+}
+
+// ─── Game start ───────────────────────────────────────────
+function startGame() {
+  S.qs = Array.from({ length: S.total }, () => makeQ(S.grade));
+  S.qi = 0; S.score = 0; S.locked = false;
+  document.getElementById('grade-tag').textContent = `Grade ${S.grade}`;
+  showScreen('quiz-screen');
+  renderQ();
+}
+
+function renderQ() {
+  const q = S.qs[S.qi];
+  document.getElementById('score-badge').textContent = S.score;
+  document.getElementById('prog-label').textContent  = `${S.qi+1} / ${S.total}`;
+  document.getElementById('prog-fill').style.width   = `${(S.qi / S.total) * 100}%`;
+  document.getElementById('q-text').textContent      = q.q;
+  document.getElementById('q-card').classList.remove('glow-correct');
+
+  const grid = document.getElementById('opts-grid');
+  grid.innerHTML = '';
+  q.o.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.textContent = opt;
+    btn.onclick = () => pick(opt, btn, q);
+    grid.appendChild(btn);
+  });
+
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback';
+  fb.innerHTML = '<div class="feedback-idle">Choose your answer above! 🐕</div>';
+  S.locked = false;
+}
+
+// ─── Answer checking ──────────────────────────────────────
+function pick(chosen, btn, q) {
+  if (S.locked) return;
+  S.locked = true;
+
+  const correct = String(chosen).trim() === String(q.a).trim();
+
+  document.querySelectorAll('.opt-btn').forEach(b => {
+    b.disabled = true;
+    if (b.textContent.trim() === String(q.a).trim()) b.classList.add('correct');
+  });
+
+  const fb = document.getElementById('feedback');
+
+  if (correct) {
+    S.score++;
+    // Rainbow shimmer on the correct button
+    btn.classList.remove('correct');
+    btn.classList.add('correct-celebrate');
+
+    // Glow the question card
+    document.getElementById('q-card').classList.add('glow-correct');
+
+    // Flash overlay
+    flashScreen();
+
+    // Burst particles from button centre
+    burstParticles(btn);
+
+    // Float a big emoji
+    floatBigEmoji(btn);
+
+    // Pump the score badge
+    pumpScore();
+
+    // Feedback box with pop
+    const m = rc(CORRECT_MSGS);
+    fb.className = 'feedback ok anim-pop';
+    fb.innerHTML = `<div class="feedback-icon">${m.i}</div>
+                    <div class="feedback-msg">${m.t}</div>
+                    <button class="next-btn show" onclick="advance()">Next →</button>`;
+
+    // Confetti
+    confetti(20);
+  } else {
+    btn.classList.add('wrong');
+    btn.style.animation = 'shake .5s ease';
+    setTimeout(() => { btn.style.animation = ''; }, 600);
+
+    const m = rc(WRONG_MSGS);
+    const needsAns = m.t.endsWith('was');
+    fb.className = 'feedback oops';
+    fb.innerHTML = `<div class="feedback-icon">${m.i}</div>
+                    <div class="feedback-msg">${m.t}${needsAns ? ' <strong>' + q.a + '</strong>.' : ''}</div>
+                    <button class="next-btn show" onclick="advance()">Next →</button>`;
+  }
+
+  document.getElementById('score-badge').textContent = S.score;
+}
+
+function advance() {
+  S.qi++;
+  if (S.qi >= S.total) showResults();
+  else renderQ();
+}
+
+// ─── Results ──────────────────────────────────────────────
+function showResults() {
+  const sc  = S.score;
+  const pct = Math.round(sc / S.total * 100);
+  const idx = sc === S.total ? 0 : sc >= 8 ? 1 : sc >= 6 ? 2 : sc >= 4 ? 3 : 4;
+  const res = RESULTS[idx];
+
+  document.getElementById('r-score').textContent  = sc;
+  document.getElementById('r-stars').textContent  = res.stars;
+  document.getElementById('r-msg').textContent    = res.msg;
+  document.getElementById('r-pct').textContent    = `You got ${pct}% correct!`;
+  document.getElementById('results-title').textContent = res.title;
+
+  if (idx <= 1) confetti(idx === 0 ? 65 : 38);
+  showScreen('results-screen');
+}
+
+function playAgain() { startGame(); }
+
+// ─── Effect helpers ───────────────────────────────────────
+
+// Score badge pump
+function pumpScore() {
+  const badge = document.getElementById('score-badge');
+  badge.classList.remove('pump');
+  void badge.offsetWidth; // reflow
+  badge.classList.add('pump');
+  badge.addEventListener('animationend', () => badge.classList.remove('pump'), { once: true });
+}
+
+// Full-screen flash
+function flashScreen() {
+  const el = document.createElement('div');
+  el.className = 'flash-overlay';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 600);
+}
+
+// Emoji burst radiating outward from button
+function burstParticles(btn) {
+  const rect = btn.getBoundingClientRect();
+  const cx   = rect.left + rect.width  / 2;
+  const cy   = rect.top  + rect.height / 2;
+  const count = 8;
+
+  for (let i = 0; i < count; i++) {
+    const el    = document.createElement('div');
+    el.className = 'burst-particle';
+    el.textContent = rc(BURST_EMOJIS);
+
+    const angle = (i / count) * Math.PI * 2;
+    const dist  = 70 + Math.random() * 60;
+    const bx    = Math.cos(angle) * dist + 'px';
+    const by    = Math.sin(angle) * dist + 'px';
+
+    el.style.left = (cx - 12) + 'px';
+    el.style.top  = (cy - 12) + 'px';
+    el.style.setProperty('--bx', bx);
+    el.style.setProperty('--by', by);
+    el.style.animationDelay    = (Math.random() * 0.12) + 's';
+    el.style.animationDuration = (0.6 + Math.random() * 0.25) + 's';
+
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 1100);
+  }
+}
+
+// Big emoji floats up from button position
+function floatBigEmoji(btn) {
+  const rect = btn.getBoundingClientRect();
+  const cx   = rect.left + rect.width  / 2;
+  const cy   = rect.top  + rect.height / 2;
+
+  const el = document.createElement('div');
+  el.className   = 'float-emoji';
+  el.textContent = rc(FLOAT_EMOJIS);
+  el.style.left  = (cx - 24) + 'px';
+  el.style.top   = cy + 'px';
+
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1300);
+}
+
+// Confetti shower
+function confetti(n) {
+  const wrap   = document.getElementById('confetti-wrap');
+  const colors = ['#3A9FCC','#F4874B','#FFD166','#3DB88B','#E05C5C','#9B72CF','#FF8FAB','#FFBE0B'];
+  for (let i = 0; i < n; i++) {
+    const el = document.createElement('div');
+    el.className = 'cp';
+    el.style.left              = Math.random() * 100 + 'vw';
+    el.style.top               = '-30px';
+    el.style.width             = (7 + Math.random() * 8) + 'px';
+    el.style.height            = (7 + Math.random() * 8) + 'px';
+    el.style.background        = colors[Math.floor(Math.random() * colors.length)];
+    el.style.transform         = `rotate(${Math.random() * 360}deg)`;
+    el.style.animationDuration = (1.6 + Math.random() * 2) + 's';
+    el.style.animationDelay    = (Math.random() * 0.7) + 's';
+    wrap.appendChild(el);
+    setTimeout(() => el.remove(), 4500);
+  }
+}
+
+// ─── Boot ─────────────────────────────────────────────────
+buildGradeGrid();
+</script>
+</body>
+</html>
